@@ -19,19 +19,19 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Dashboard from '../component/Dashboard';
 import { QuerySnapshot } from 'firebase/firestore';
 // import { Item } from 'react-native-paper/lib/typescript/components/Drawer/Drawer';
-export default class SearchItems extends React.Component {
+export default class SearchOrders extends React.Component {
 
   constructor() {
     super();
-    this.docs = firebase.firestore().collection('Item');
+    this.docs = firebase.firestore().collection('Orders');
     this.state = {
        
         uid: '',
       
       isLoading: false,
       //array for storing product details
-      item: [],
-      items: []
+      order: [],
+      orders: []
     };
   }
 
@@ -47,32 +47,33 @@ export default class SearchItems extends React.Component {
   }  
   
 fetchCollection = (querySnapshot) => {
-    const item = [];
-    const items = [];
+    const order = [];
+    const orders = [];
     querySnapshot.forEach((res) => {
-      const { productName, UOM,NOQ, SKUID,CIQ } = res.data();
-      item.push({
+      const { productName, UOM, SKUID,CIQ,NOQ, Status, DateCreated } = res.data();
+      order.push({
         key: res.id,
         productName,
         UOM,
         SKUID,
         CIQ,
-        NOQ
+        NOQ,
+        Status,
+        DateCreated,
         
       });
-      items.push({
+      orders.push({
         key: res.id,
         productName,
         UOM,
         SKUID,
-        CIQ,
-        NOQ
+        CIQ
         
       });
     });
     this.setState({
-      item,
-      items,
+      order,
+      orders,
       isLoading: false
    });
   }
@@ -82,147 +83,49 @@ fetchCollection = (querySnapshot) => {
     this.unsubscribe = this.docs.onSnapshot(this.fetchCollection);
   }
 
-//   componentWillUnmount() {
-//       this.unsubscribe();
-//   }
-
-  renderItem = ({ item }) => (
-<DataTable >
-
-
-        <DataTable.Row>
-          <DataTable.Cell chechbox><CheckBox/></DataTable.Cell>
-          <DataTable.Cell>{item.SKUID}</DataTable.Cell>
-          <DataTable.Cell >{item.productName}</DataTable.Cell>
-          <DataTable.Cell>{item.UOM}</DataTable.Cell>
-          <DataTable.Cell><TextInput
-              keyboardType="numeric"
-              style={{
-                fontWeight: "bold",
-                borderColor: "Black",
-                borderWidth: 1,
-                alignItems: 'center',
-                height:"50%",
-                width:"80%",
-                padding: 10
-              }}
-              value={this.state.CIQ}
-              onChangeText={(val) => {this.updateInputVal(val,"item.CIQ")
-            this.state.item.map((res,i)=> {if(item.key==res.key) {res.CIQ=val}} )
-            }}
-            /> </DataTable.Cell>
-          <DataTable.Cell numeric style={{justifyContent:"center"}}><TextInput
-              keyboardType="numeric"
-              style={{
-                fontWeight: "bold",
-                borderColor: "Black",
-                borderWidth: 1,
-                padding: 10,
-                width:"80%",
-                marginLeft:10,
-              }}
-              value={this.state.NOQ}
-              onChangeText={(val) =>{this.updateInputVal(val,"item.NOQ")
-              this.state.item.map((res,i)=> {if(item.key==res.key) {res.NOQ=val}} )
-              }}
-            /> </DataTable.Cell>
-            {/* <DataTable.Cell Button style={{justifyContent:"center"}}> <Button
-              color="black"
-              borderRadius="8"
-              borderWidth="1"
-              margin="10"
-              elevation="3"
-              title="  -  "
-              
-            /></DataTable.Cell> */}
+  renderOrder = ({ order }) => (
+        
+        <DataTable >
+          <DataTable.Row>
+          <DataTable.Cell >{order.DateCreated}</DataTable.Cell>
+          <DataTable.Cell>{order.SKUID}</DataTable.Cell>
+          <DataTable.Cell >{order.productName}</DataTable.Cell>
+          <DataTable.Cell>{order.UOM}</DataTable.Cell>
+          <DataTable.Cell>{order.CIQ} </DataTable.Cell>
+          <DataTable.Cell>{order.NOQ}</DataTable.Cell>
+          <DataTable.Cell>{order.Status}</DataTable.Cell>
         </DataTable.Row>
-
-        {/* </>
-         );
-        })
-      } */}
-
           </DataTable>
-        //   </ScrollView>
 
+         
   );
 
-  searchitems = value => {
-    const filtereditems = this.state.item.filter(items => {
+  searchorders = value => {
+    const filteredorder = this.state.order.filter(orders => {
       let ProductLowercase = (
-        items.productName   ).toLowerCase();
+        orders.productName   ).toLowerCase();
 
       let searchTermLowercase = value.toLowerCase();
 
       return ProductLowercase.indexOf(searchTermLowercase) > -1;
     });
-    this.setState({ items: filtereditems });
+    this.setState({ orders: filteredorder });
   };
 
   searchsku = value => {
-    const filtereditemsid = this.state.item.filter(items => {
+    const filteredorderid = this.state.order.filter(orders => {
       let skuLowercase = (
-        items.SKUID   ).toLowerCase();
+        orders.SKUID   ).toLowerCase();
 
       let searchTermLowercase = value.toLowerCase();
 
       return skuLowercase.indexOf(searchTermLowercase) > -1;
     });
-    this.setState({ items: filtereditemsid });
+    this.setState({ orders: filteredorderid });
   };
 
 
-  updateInputVal = (val, prop) => {
-    const state = this.state;
-    state[prop] = val;
-    this.setState(state);
-    // console.log(val);
-    console.log(prop);
-    // console.log(state);
-  };
-  
-  submitOrder = ()=>{
-    this.setState({
-      isLoading: true,
-    });
-    //  let arrid=[];
-    //  let arrCIQ=[];
-    //  let arrNOQ=[];
-    // this.state.item.forEach((d)=>{
-    //   if(d.CIQ!=0){
-    //     arrid.push(d.key);
-    //     arrNOQ.push(d.NOQ);
-    //     arrCIQ.push(d.CIQ);
-    //   }
-    // })
-    // console.log(arrNOQ,arrid);
 
-    const ref =firebase.firestore().collection('Item');
-    const ord = firebase.firestore().collection('Orders');
-    this.state.item.map((res, i) => {
-      if(res){
-    const updateRef = firebase.firestore().collection('Item').doc(res.key);
- 
-  updateRef.set(res).then(() => {
-    if(res.CIQ){
-    ord.add({
-      SKUID: res.SKUID,
-      productName: res.productName,
-      UOM:res.UOM,
-      CIQ:res.CIQ,
-      NOQ:res.NOQ,
-      Status:"Not Submitted By HQ",
-      DateCreated:new Date(),
-    });}
-});}
-})
-  
- 
-    this.state.item.map((res,i)=>{
-      console.log(res);
-
-    })
-};
   
   render() {
     return (
@@ -243,7 +146,7 @@ fetchCollection = (querySnapshot) => {
             borderBottomWidth: 0.5,
             borderBottomColor: '#7d90a0'
           }}
-          onChangeText={value => this.searchitems(value)}
+          onChangeText={value => this.searchorders(value)}
         />
         </View>
         <View>
@@ -280,19 +183,19 @@ fetchCollection = (querySnapshot) => {
           <DataTable style={styles.Table}>
 
 <DataTable.Header style={{backgroundColor: "#E6F3F5"}}>
-  <DataTable.Title><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman',alignContent:'center'}}>Availability</Text></DataTable.Title>
+  <DataTable.Title><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman',alignContent:'center'}}>DateCreated</Text></DataTable.Title>
   <DataTable.Title varchar><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman',alignSelf:'center'}}>SKUID</Text></DataTable.Title>
   <DataTable.Title><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman'}}>Product Name</Text></DataTable.Title>
   <DataTable.Title><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman'}}>Unit of Measure</Text></DataTable.Title>
-  <DataTable.Title numeric><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman',ali:'center'}}>Current Inventory Quantity</Text></DataTable.Title>
+  <DataTable.Title numeric><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman',textAlign:'center'}}>Current Inventory Quantity</Text></DataTable.Title>
   <DataTable.Title numeric><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman',alignSelf:'center'}}>New Order Quantity</Text></DataTable.Title>
-  {/* <DataTable.Title Button>Delete Item</DataTable.Title> */}
+  <DataTable.Title><Text style={{color:"black",fontSize:14,fontFamily:'TimesNewRoman'}}>Status</Text></DataTable.Title>
 </DataTable.Header>
 <ScrollView style={styles.wrapper}>
           <FlatList
-            data={this.state.items}
-            renderItem={this.renderItem}
-            keyExtractor={(item, index) => index.toString()}
+            data={this.state.orders}
+            renderOrder={this.renderOrder}
+            keyExtractor={(order, index) => index.toString()}
             ListEmptyComponent={() => (
               <View
                 style={{
@@ -303,7 +206,7 @@ fetchCollection = (querySnapshot) => {
                 }}
               >
 
-                <Text style={{ color: '#890620',fontsize:36 ,fontStyle:'serif' ,fontWeight: 'bold'}}>No Items Found</Text>
+                <Text style={{ color: '#890620',fontsize:36 ,fontStyle:'serif' ,fontWeight: 'bold'}}>No Orders Found</Text>
               </View>
             )}
           />
@@ -312,17 +215,7 @@ fetchCollection = (querySnapshot) => {
           </View>
         </View>
         <View styles={styles.footerbutton}>
-        <View style={styles.Button}>
-        <Button
-               color="#03045e"
-              borderRadius="8"
-              borderWidth="1"
-              margin="10"
-              elevation="3"
-              title="Submit Order"
-              onPress={() => this.submitOrder()} 
-            />
-        </View>
+
         <View style={styles.Button}>
         <Button
               color="#03045e"

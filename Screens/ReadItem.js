@@ -9,10 +9,10 @@ import { DataTable } from 'react-native-paper';
 class ReadItem extends Component {
   constructor() {
     super();
-    this.docs = firebase.firestore().collection('Item');
+    this.docs = firebase.firestore().collection('Orders');
     this.state = {
       isLoading: true,
-      item: []
+      order: []
     };
   }
 
@@ -25,20 +25,22 @@ class ReadItem extends Component {
   }
 
   fetchCollection = (querySnapshot) => {
-    const item = [];
+    const order = [];
     querySnapshot.forEach((res) => {
-      const { productName, UOM, SKUID,CIQ } = res.data();
-      item.push({
+      const { productName, UOM, SKUID,CIQ,DateCreated,Status } = res.data();
+      order.push({
         key: res.id,
         productName,
         UOM,
         SKUID,
-        CIQ
+        CIQ,
+        DateCreated,
+        Status,
         
       });
     });
     this.setState({
-      item,
+      order,
       isLoading: false
    });
   }
@@ -54,63 +56,39 @@ class ReadItem extends Component {
       )
     }    
     return (
+      <View>
       <ScrollView style={styles.wrapper}>
 
 
 <DataTable style={{ border: "2px solid rgb(0, 0, 0)" }}>
 
 <DataTable.Header>
-  <DataTable.Title>Availability</DataTable.Title>
+  <DataTable.Title>Date</DataTable.Title>
   <DataTable.Title varchar>SKUID</DataTable.Title>
   <DataTable.Title>Product Name</DataTable.Title>
   <DataTable.Title>Unit of Measure</DataTable.Title>
   <DataTable.Title numeric>Current Inventory Quantity</DataTable.Title>
   <DataTable.Title numeric>New Order Quantity</DataTable.Title>
-  <DataTable.Title Button>Delete Item</DataTable.Title>
+  <DataTable.Title >Status</DataTable.Title>
 </DataTable.Header>
-
+<View>
           {
-            this.state.item.map((res, i) => {
+            this.state.order.map((res, i) => {
               return (
 
-                <>
+                <View>
                     
         <DataTable.Row>
-          <DataTable.Cell chechbox><CheckBox/></DataTable.Cell>
+          <DataTable.Cell chechbox>{res.DateCreated}</DataTable.Cell>
           <DataTable.Cell>{res.SKUID}</DataTable.Cell>
           <DataTable.Cell >{res.productName}</DataTable.Cell>
           <DataTable.Cell>{res.UOM}</DataTable.Cell>
-          <DataTable.Cell><TextInput
-              keyboardType="numeric"
-              style={{
-                fontWeight: "bold",
-                borderColor: "Black",
-                borderWidth: 1,
-                padding: 10,
-                width:"80%",
-                marginLeft:10,
-              }}
-            /> </DataTable.Cell>
-          <DataTable.Cell numeric style={{justifyContent:"center"}}><TextInput
-              keyboardType="numeric"
-              style={{
-                fontWeight: "bold",
-                borderColor: "Black",
-                borderWidth: 1,
-                padding: 10,
-                width:"80%",
-                marginLeft:10,
-              }}
-            /> </DataTable.Cell>
-            <DataTable.Cell Button style={{justifyContent:"center"}}> <Button
-              color="black"
-              borderRadius="8"
-              borderWidth="1"
-              margin="10"
-              elevation="3"
-              title="  -  "
-              
-            /></DataTable.Cell>
+          <DataTable.Cell>{res.CIQ}</DataTable.Cell>
+          <DataTable.Cell numeric style={{justifyContent:"center"}}>
+          {res.NOQ}</DataTable.Cell>
+            <DataTable.Cell style={{justifyContent:"center"}}>
+              {res.Status}
+             </DataTable.Cell>
         </DataTable.Row>
 
               
@@ -134,12 +112,13 @@ class ReadItem extends Component {
                     <ListItem.Chevron
                       color="black" />
                   </ListItem> */}
-                  </>
+                  </View>
               );
             })
-          }
+          }</View>
               </DataTable>
       </ScrollView>
+      </View>
     );
   }
 }
